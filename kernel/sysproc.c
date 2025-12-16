@@ -107,3 +107,29 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+// Kernel-side syscall implementation
+uint64
+sys_hello(void)
+{
+ struct proc *p = myproc();
+ // A kernel-side message — printed with cprintf (runs in kernel)
+ printf("kernel: hello() called by pid %d (running in kernel)\n", p->pid);
+ // Optionally perform other kernel-only actions here, e.g.:
+ // - allocate kernel memory
+ // -inspect process fields
+ // Keep it short and safe.
+ return 0; // return value visible to the user caller
+}
+
+uint64
+sys_kpanic(void)
+{
+  printf("kernel: sys_kpanic() called by pid %d. Intentionally causing NULL pointer access...\n", myproc()->pid);
+  
+  // Đây là "lỗi truy cập con trỏ NULL trong kernel space"
+  *(volatile int *)0 = 42;
+  
+  // Kernel sẽ panic trước khi đến được đây.
+  return 0;
+}

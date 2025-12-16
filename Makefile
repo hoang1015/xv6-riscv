@@ -143,6 +143,8 @@ UPROGS=\
 	$U/_logstress\
 	$U/_forphan\
 	$U/_dorphan\
+	$U/_hello\
+	$U/_kpanic\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
@@ -167,13 +169,24 @@ ifndef CPUS
 CPUS := 3
 endif
 
+
 QEMUOPTS = -machine virt -bios none -kernel $K/kernel -m 128M -smp $(CPUS) -nographic
 QEMUOPTS += -global virtio-mmio.force-legacy=false
 QEMUOPTS += -drive file=fs.img,if=none,format=raw,id=x0
 QEMUOPTS += -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
 
+# Target qemu cũ của bạn trông như thế này:
+# qemu: check-qemu-version $K/kernel fs.img
+# 	$(QEMU) $(QEMUOPTS) | tee panic.log
+
+# HÃY THAY THẾ BẰNG ĐOẠN NÀY:
 qemu: check-qemu-version $K/kernel fs.img
-	$(QEMU) $(QEMUOPTS)
+	@echo "Press Ctrl+C (twice if needed) to stop the reboot loop."
+	@while true; do \
+		$(QEMU) $(QEMUOPTS) | tee -a panic.log; \
+		echo "\n\033[35m[Makefile] System halted. Rebooting QEMU in 1 second...\033[0m"; \
+		sleep 1; \
+	done
 
 .gdbinit: .gdbinit.tmpl-riscv
 	sed "s/:1234/:$(GDBPORT)/" < $^ > $@
