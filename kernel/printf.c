@@ -133,16 +133,82 @@ printf(char *fmt, ...)
   return 0;
 }
 
+//-----Code moi-------------------------
+
+// Mã màu ANSI
+#define RED     "\x1b[31m"
+#define YELLOW  "\x1b[33m"
+#define CYAN    "\x1b[36m"
+#define MAGENTA "\x1b[35m"
+#define RESET   "\x1b[0m"
+
+// Địa chỉ thiết bị test của QEMU
+#define QEMU_TEST_CTRL (volatile uint32*)(0x100000)
+#define QEMU_TEST_FAIL 0x3333 
+
+// Hàm tạo độ trễ giả (Busy wait)
+void
+panic_spin_delay(uint64 count)
+{
+  volatile uint64 i;
+  for(i = 0; i < count; i++)
+    ;
+}
+
 void
 panic(char *s)
 {
-  panicking = 1;
-  printf("panic: ");
-  printf("%s\n", s);
-  panicked = 1; // freeze uart output from other CPUs
+  uint64 sepc = r_sepc();
+  uint64 scause = r_scause();
+  struct proc *p = myproc();
+
+  // 1. Hiển thị Log
+  printf(RED "\n\n--- KERNEL PANIC ---\n" RESET);
+  printf(RED "REASON: %s\n\n" RESET, s);
+  
+  printf(YELLOW "--- CPU STATE ---\n" RESET);
+  printf(YELLOW "sepc:   0x%p\n" RESET, (void*)sepc);
+  printf(YELLOW "scause: 0x%p" RESET, (void*)scause);
+
+  if(scause == 12) printf(" (Instruction Page Fault)\n");
+  else if(scause == 13) printf(" (Load Page Fault)\n");
+  else if(scause == 15) printf(" (Store/AMO Page Fault)\n");
+  else printf(" (Unknown Cause)\n");
+
+  if(p) {
+    printf(CYAN "\n--- PROCESS STATE ---\n" RESET);
+    printf(CYAN "PID:    %d\n" RESET, p->pid);
+    printf(CYAN "Name:   %s\n" RESET, p->name);
+  } else {
+    printf(CYAN "\n--- PROCESS STATE ---\n" RESET);
+    printf(CYAN "No process context\n" RESET);
+  }
+  
+  printf(RED "\n--- SYSTEM HALTED ---\n" RESET);
+  
+  panicked = 1; 
+
+  // 2. Auto-Reboot Sequence (Đếm ngược)
+  printf(MAGENTA "\nAuto-rebooting system in 3 seconds...\n" RESET);
+  
+  // Đếm ngược 3..2..1
+  for(int i = 3; i > 0; i--){
+      printf(MAGENTA "%d...\n" RESET, i);
+      // Delay khoảng 1 giây (số vòng lặp tùy thuộc tốc độ máy host)
+      panic_spin_delay(200000000); 
+  }
+
+  printf(MAGENTA "Rebooting now!\n" RESET);
+
+  // 3. Trigger QEMU Exit
+  *QEMU_TEST_CTRL = QEMU_TEST_FAIL;
+
   for(;;)
     ;
 }
+ 
+//----------------Het code moi----------
+
 
 void
 printfinit(void)

@@ -1,0 +1,65 @@
+
+xv6 kernel is booting
+
+hart 2 starting
+hart 1 starting
+init: starting sh
+$ kpanic
+user: Calling kpanic() syscall...
+kernel: sys_kpanic() called by pid 3. Intentionally causing NULL pointer access...
+scause=0xf sepc=0x80002c10 stval=0x0
+[31m
+
+--- KERNEL PANIC ---
+[0m[31mREASON: kerneltrap
+
+[0m[33m--- CPU STATE ---
+[0m[33msepc:   0x0x0000000080002c10
+[0m[33mscause: 0x0x000000000000000f[0m (Store/AMO Page Fault)
+[36m
+--- PROCESS STATE ---
+[0m[36mPID:    3
+[0m[36mName:   kpanic
+[0m[31m
+--- SYSTEM HALTED ---
+[0mQEMU: Terminated
+
+xv6 kernel is booting
+
+hart 1 starting
+hart 2 starting
+init: starting sh
+$ QEMU: Terminated
+
+xv6 kernel is booting
+
+hart 2 starting
+hart 1 starting
+init: starting sh
+$ kpanic
+user: Calling kpanic() syscall...
+kernel: sys_kpanic() called by pid 3. Intentionally causing NULL pointer access...
+scause=0xf sepc=0x80002c10 stval=0x0
+[31m
+
+--- KERNEL PANIC ---
+[0m[31mREASON: kerneltrap
+
+[0m[33m--- CPU STATE ---
+[0m[33msepc:   0x0x0000000080002c10
+[0m[33mscause: 0x0x000000000000000f[0m (Store/AMO Page Fault)
+[36m
+--- PROCESS STATE ---
+[0m[36mPID:    3
+[0m[36mName:   kpanic
+[0m[31m
+--- SYSTEM HALTED ---
+[0mQEMU: Terminated
+
+xv6 kernel is booting
+
+hart 2 starting
+hart 1 starting
+init: starting sh
+$ QEMU: Terminated
+
